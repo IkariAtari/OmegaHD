@@ -15,6 +15,9 @@ namespace Omega.Player
         [SerializeField]
         private float LookSensitivity;
 
+        [SerializeField]
+        private float Viewrange;
+
         private CharacterController Controller;
 
         private void Start() 
@@ -26,19 +29,17 @@ namespace Omega.Player
         {
             float xMovement = Input.GetAxisRaw("Horizontal");
             float zMovement = Input.GetAxisRaw("Vertical");
-            float xRotation = Input.GetAxisRaw("Mouse Y");
-            float yRotation = Input.GetAxisRaw("Mouse X");
+            float yRotation = Input.GetAxisRaw("Mouse Y");
+            float xRotation = Input.GetAxisRaw("Mouse X");
             
             Vector3 xVector = transform.right * xMovement * Time.deltaTime;
             Vector3 zVector = transform.forward * zMovement * Time.deltaTime;
 
-            Vector3 xRotationVector = new Vector3(-xRotation, 0, 0) * LookSensitivity;
-            Vector3 yRotationVector = new Vector3(0, yRotation, 0) * LookSensitivity;
-
+            Vector3 yRotationVector = new Vector3(0, xRotation, 0) * LookSensitivity;
             Vector3 Velocity = (xVector + zVector).normalized * Speed;
 
             Move(Velocity);
-            Rotation(xRotationVector, yRotationVector);
+            Rotation(yRotation * LookSensitivity, yRotationVector);
         }
 
         private void Move(Vector3 Velocity)
@@ -46,11 +47,12 @@ namespace Omega.Player
             Controller.Move(Velocity);
         }
 
-        private void Rotation(Vector3 X, Vector3 Y)
+        private void Rotation(float CameraRotation, Vector3 BodyRotation)
         {
-            this.transform.Rotate(transform.rotation * Y);
-
-            Cam.transform.Rotate(X);
+            this.transform.Rotate(transform.rotation * BodyRotation);
+            Cam.transform.localRotation *= Quaternion.Euler(-CameraRotation, 0, 0);
+            Debug.Log(Cam.transform.eulerAngles.x);
+            Cam.transform.localRotation = Quaternion.Euler(Mathf.Max(Cam.transform.eulerAngles.x, -Viewrange), 0, 0);
         }
     }
 }
