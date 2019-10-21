@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Omega.Misc;
 
 namespace Omega.Player
 {
@@ -20,6 +21,13 @@ namespace Omega.Player
 
         private CharacterController Controller;
 
+        private float Gravilocity;
+
+        private bool HasJumped = false;
+
+        [SerializeField]
+        private float JumpPower;
+
         private void Start() 
         {
             Controller = GetComponent<CharacterController>();
@@ -27,6 +35,25 @@ namespace Omega.Player
 
         private void Update() 
         {
+            if(Input.GetKeyDown(KeyCode.Space) && Controller.isGrounded && HasJumped != true)
+            {
+                HasJumped = true;
+            }
+
+            if(Controller.isGrounded != true)
+            {
+                Gravilocity -= GlobalConstants.GRAVITATIONAL_ACCELERATION * Time.deltaTime;
+            }
+            else if(HasJumped)
+            {
+                Gravilocity += JumpPower;
+                HasJumped = false;
+            }
+            else
+            {
+                Gravilocity = -1f;
+            }
+
             float xMovement = Input.GetAxisRaw("Horizontal");
             float zMovement = Input.GetAxisRaw("Vertical");
             float yRotation = Input.GetAxisRaw("Mouse Y");
@@ -39,6 +66,7 @@ namespace Omega.Player
             Vector3 Velocity = (xVector + zVector).normalized * Speed;
 
             Move(Velocity);
+            Move(new Vector3(0, Gravilocity, 0));
             Rotation(yRotation * LookSensitivity, yRotationVector);
         }
 
@@ -51,7 +79,6 @@ namespace Omega.Player
         {
             this.transform.Rotate(transform.rotation * BodyRotation);
             Cam.transform.localRotation *= Quaternion.Euler(-CameraRotation, 0, 0);
-            Debug.Log(Cam.transform.eulerAngles.x);
             Cam.transform.localRotation = Quaternion.Euler(Mathf.Max(Cam.transform.eulerAngles.x, -Viewrange), 0, 0);
         }
     }
