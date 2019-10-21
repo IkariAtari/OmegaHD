@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Omega.Misc;
 
 namespace Omega.Player
@@ -11,7 +9,12 @@ namespace Omega.Player
         private Camera Cam;
 
         [SerializeField]
-        private float Speed;
+        private float WalkingSpeed;
+
+        [SerializeField]
+        private float RunningSpeed;
+
+        private float CurrentSpeed;
 
         [SerializeField]
         private float LookSensitivity;
@@ -29,12 +32,22 @@ namespace Omega.Player
         private float JumpPower;
 
         private void Start() 
-        {
+        {         
             Controller = GetComponent<CharacterController>();
+            CurrentSpeed = WalkingSpeed;
         }
 
         private void Update() 
         {
+            if(Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                CurrentSpeed = RunningSpeed;
+            }
+            if(Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                CurrentSpeed = WalkingSpeed;
+            }
+
             if(Input.GetKeyDown(KeyCode.Space) && Controller.isGrounded && HasJumped != true)
             {
                 HasJumped = true;
@@ -63,7 +76,7 @@ namespace Omega.Player
             Vector3 zVector = transform.forward * zMovement * Time.deltaTime;
 
             Vector3 yRotationVector = new Vector3(0, xRotation, 0) * LookSensitivity;
-            Vector3 Velocity = (xVector + zVector).normalized * Speed;
+            Vector3 Velocity = (xVector + zVector).normalized * CurrentSpeed;
 
             Move(Velocity);
             Move(new Vector3(0, Gravilocity, 0));
